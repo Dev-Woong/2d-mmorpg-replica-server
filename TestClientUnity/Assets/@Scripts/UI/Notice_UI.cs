@@ -10,6 +10,7 @@ public enum NoticeCode
     LoginFailNullPW,
     LoginFailNullAccount,
     LoginSuccess,
+    CheckExitCreateAccountPanel,
     CreateAccountFail,
     CreateAccountSucess 
 }
@@ -37,20 +38,24 @@ public class Notice_UI : MonoBehaviour
                 break;
 
             case NoticeCode.LoginFailNullAccount:
-                _noticeText.text = "로그인에 실패했습니다 " +
-                    "존재하지 않는 계정이거나 로그인 정보를 다시 입력해주세요.";
+                _noticeText.text = "로그인에 실패했습니다\n존재하지 않는 계정이거나 로그인 정보를 다시 입력해주세요.";
                 break;
 
             case NoticeCode.LoginSuccess:
                 _noticeText.text = "로그인을 진행중입니다. 잠시만 기다려주세요.";
                 break;
 
+            case NoticeCode.CheckExitCreateAccountPanel:
+                _noticeText.text = "정말로 계정 생성을 멈추시고 로그인 화면으로\n돌아가시겠습니까?";
+                ShowCloseButton();
+                break;
+
             case NoticeCode.CreateAccountSucess:
-                _noticeText.text = "계정 생성이 완료되었습니다. 체크 버튼을 누르시면 로그인 화면으로 돌아갑니다.";
+                _noticeText.text = "계정 생성이 완료되었습니다.\n체크 버튼을 누르시면 로그인 화면으로 돌아갑니다.";
                 break;
 
             case NoticeCode.CreateAccountFail:
-                _noticeText.text = "계정 생성에 필요한 조건이 충족되지 않았습니다. 다시 시도해주세요.";
+                _noticeText.text = "계정 생성에 필요한 조건이 충족되지 않았습니다.\n다시 시도해주세요.";
                 break;
         }
         return _noticeText;
@@ -77,11 +82,20 @@ public class Notice_UI : MonoBehaviour
             _noticeText.text = "";
             this.gameObject.SetActive(false);
         }
+        else if (_noticeCode == NoticeCode.CheckExitCreateAccountPanel)
+        {
+            _authorizePanel.SetActive(true);
+            _createAccountPanel.SetActive(false);
+            _createAccountPanel.GetComponent<CreateAccount_UI>().InitializePanel();
+            _noticeText.text = "";
+            this.gameObject.SetActive(false);
+        }
         else if (_noticeCode == NoticeCode.CreateAccountSucess)
         {
             _createAccountPanel.SetActive(false);
             _authorizePanel.SetActive(true);
             _noticeText.text = "";
+            _createAccountPanel.GetComponent<CreateAccount_UI>().InitializePanel();
             this.gameObject.SetActive(false);
         }
         else if (_noticeCode == NoticeCode.CreateAccountFail)
@@ -90,12 +104,17 @@ public class Notice_UI : MonoBehaviour
             this.gameObject.SetActive(false);
         }
     }
+    private void ShowCloseButton()
+    {
+        _closePanelBtn.enabled = true;
+        _closePanelBtn.image.color = Color.white;
+    }
     private void OnClickClose()
     {
         _noticeText.text = "";
         _authorizePanel.SetActive(true);
         _closePanelBtn.enabled = false;
-        _closePanelBtn.image.color = new Color(1, 1, 1, 0);
+        _closePanelBtn.image.color = new Color(0, 0, 0, 0);
         this.gameObject.SetActive(false);
     }
     private void Awake()
@@ -107,7 +126,7 @@ public class Notice_UI : MonoBehaviour
     {
         _noticeText.text = "";
         _closePanelBtn.enabled = false;
-        _closePanelBtn.image.color = new Color(1,1,1,0);
+        _closePanelBtn.image.color = new Color(0,0,0,0);
         this.gameObject.SetActive(false);   
     }
 }

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Windows;
 public static class Authenticate
 {
     public static async Task<bool> DoCreateAccountAsync(Auth.AuthClient client, string id, string password)
@@ -36,6 +37,26 @@ public static class Authenticate
         {
             Debug.LogError($"[가입 예외] {ex.Message}");
             return false;
+        }
+    }
+    public static async Task<(bool available, string detail)> CheckEmailAsync(Auth.AuthClient client, string email)
+    {
+        try
+        {
+            var reply = await client.CheckEmailAsync(
+                new CheckEmailRequest { Email = (email ?? "").Trim().ToLowerInvariant() });
+
+            return (reply.Available, reply.Detail);
+        }
+        catch (RpcException ex)
+        {
+            Debug.LogError($"[중복확인 RPC 오류] {ex.StatusCode} / {ex.Status.Detail}");
+            return (false, "서버 통신 오류");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[중복확인 예외] {ex.Message}");
+            return (false, "예외 발생");
         }
     }
 }
@@ -69,12 +90,13 @@ public class CreateAccount_UI : MonoBehaviour
 
         if (_createAccountBtn) _createAccountBtn.onClick.AddListener(OnClickCreateAccount);
         if (_ExitCreateAccountBtn) _ExitCreateAccountBtn.onClick.AddListener(OnClickExitCreateAccount);
-        //if (_idDuplicateCheckBtn) _idDuplicateCheckBtn.onClick.AddListener(OnClickIdDuplicateCheck);
+        if (_idDuplicateCheckBtn) _idDuplicateCheckBtn.onClick.AddListener(OnClickIdDuplicateCheck);
+        if (_idField) _idField.onValueChanged.AddListener(OnIdChanged); // 입력 즉시 검사
     }
     void Start()
     {
         _handler = new YetAnotherHttpHandler { Http2Only = true };
-        _channel = GrpcChannel.ForAddress("http://182.231.5.187:8080",
+        _channel = GrpcChannel.ForAddress("http://127.0.0.1:8080",
             new GrpcChannelOptions 
             { 
                 HttpHandler = _handler,
@@ -105,6 +127,8 @@ public class CreateAccount_UI : MonoBehaviour
         if (_checkID == false)
         {
             _idUseableText.text = "아이디 중복 확인이 필요합니다.";
+            _idUseableText.color = Color.red;
+            return;
         }
         _createAccountBtn.interactable = false;
 
@@ -127,13 +151,64 @@ public class CreateAccount_UI : MonoBehaviour
         // ex_2 >> 바로 닫기
 
         // 일단 바로 닫고 다시 로그인 패널 띄우는 걸로 구현함.
-        InitializePanel();
-        _authorizePanel.SetActive(true);
-        this.gameObject.SetActive(false); 
+        ShowNotice(NoticeCode.CheckExitCreateAccountPanel);
     }
-    //private async void OnClickIdDuplicateCheck() //아이디 중복확인 버튼 이벤트
-    //{
-    //}
+    private bool IsValidEmail(string s)
+    {
+        try
+        {
+            var _ = new System.Net.Mail.MailAddress(s);
+            return true;
+        }
+        catch { return false; }
+    }
+    private void OnIdChanged(string value)
+    {
+        var email = value?.Trim() ?? "";
+        _checkID = IsValidEmail(email);
+
+        // 아이디가 바뀌면 중복확인 결과는 무효화
+        _checkID = false;
+        if (_checkID == false)
+        {
+            _idUseableText.text = "ID중복확인이 필요합니다.";
+            _idUseableText.color= Color.red;
+        }
+    }
+    private async void OnClickIdDuplicateCheck() //아이디 중복확인 버튼 이벤트
+    {
+        var id = _idField.text?.Trim();
+        if (string.IsNullOrEmpty(id))
+        {
+            _idUseableText.text = "아이디를 입력해주세요!";
+            _idUseableText.color = Color.red;
+            _checkID = false;
+            return;
+        }
+        else if (!IsValidEmail(id))
+        {
+            _idUseableText.text = "Email형식으로 입력해주세요!";
+            _idUseableText.color = Color.red;
+            _checkID = false;
+        }
+        else
+        {
+            var ok = await Authenticate.CheckEmailAsync(_client, _idField.text);
+            if (ok.available)
+            {
+                _idUseableText.text = "사용가능한 ID입니다!";
+                _idUseableText.color = Color.green;
+                _checkID = true;
+            }
+            else
+            {
+                _idUseableText.text = "중복된 ID입니다!";
+                _idUseableText.color = Color.red;
+                _checkID = false;
+            }
+        }
+        
+    }
     void CheckPassword()
     {
         if (_pwField.text == _pwCheckField.text && _pwField.text != "") // 비밀번호와 비밀번호 재확인 필드의 텍스트가 모두 같고 비어있지 않다면
@@ -147,13 +222,14 @@ public class CreateAccount_UI : MonoBehaviour
             _pwRecheckText.color = Color.red;
         }
     }
-    void InitializePanel()
+    public void InitializePanel()
     {
         _pwRecheckText.text = "";
         _idUseableText.text = "";
         _idField.text = "";
         _pwField.text = "";
         _pwCheckField.text = "";
+        _checkID = false;
     }
     
     private void Update()
