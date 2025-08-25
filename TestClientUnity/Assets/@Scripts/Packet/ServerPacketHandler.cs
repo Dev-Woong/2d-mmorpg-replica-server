@@ -40,6 +40,7 @@ namespace Packet
                     //Console.WriteLine($"[JWT VALIDATION OK]");
                    
                     UnityEngine.Debug.Log($"[LOGIN OK] accountId={reply.Result}");
+                    AuthNotice_UI.Instance.gameObject.SetActive(true);
                     AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginSuccess);
                     var req = new C_CharacterListRequest { };
                     var sendBuffer = ServerPacketManager.MakeSendBuffer(req); // Jwt 토큰 검증 완료후 캐릭터 리스트 불러오는 버퍼 발송
@@ -81,6 +82,7 @@ namespace Packet
         internal static void HANDLE_S_CharacterListReply(PacketSession session, S_CharacterListReply reply)
         {
             UnityEngine.Debug.Log($"[S_CharacterListReply] 전송받음");
+            AuthNotice_UI.Instance.gameObject.SetActive(true); 
             AuthNotice_UI.Instance.ShowNotice(NoticeCode.RecvCharacterListSuccess);
             if (reply.Characters == null)
             {
@@ -89,6 +91,7 @@ namespace Packet
             }
             foreach (var character in reply.Characters)
             {
+                AuthNotice_UI.Instance.gameObject.SetActive(true);
                 AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginSuccess);
                 //Console.WriteLine(character);
                 UnityEngine.Debug.Log(character.Username);

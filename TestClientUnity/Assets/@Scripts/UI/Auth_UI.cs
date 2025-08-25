@@ -63,11 +63,13 @@ public class Auth_UI : MonoBehaviour
         var password = _pwField.text ?? "";
         if (string.IsNullOrEmpty(id)) // 아이디 입력필드가 비워져있을때
         {
+            AuthNotice_UI.Instance.gameObject.SetActive(true);
             AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullID);
             return;
         }
         if (string.IsNullOrEmpty(password)) // 패스워드 입력필드가 비워져있을때
         {
+            AuthNotice_UI.Instance.gameObject.SetActive(true);
             AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullPW);
             return;
         }
@@ -82,17 +84,20 @@ public class Auth_UI : MonoBehaviour
             }
             else
             {
+                AuthNotice_UI.Instance.gameObject.SetActive(true);
                 AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullAccount);
             }
         }
         catch (RpcException rEX)
         {
             Debug.LogError(rEX.StatusCode);
+            AuthNotice_UI.Instance.gameObject.SetActive(true);
             AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullAccount);
         }
         catch (Exception ex)
         {
             Debug.LogError(ex.Message);
+            AuthNotice_UI.Instance.gameObject.SetActive(true);
             AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullAccount);
         }
     }

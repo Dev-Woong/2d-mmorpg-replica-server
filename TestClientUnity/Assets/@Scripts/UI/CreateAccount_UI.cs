@@ -134,12 +134,14 @@ public class CreateAccount_UI : MonoBehaviour
         // 입력 검증
         if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(pw) || string.IsNullOrEmpty(pw2))
         {
+            AuthNotice_UI.Instance.gameObject.SetActive(true);
             AuthNotice_UI.Instance.ShowNotice(NoticeCode.CreateAccountFail);
             return;
         }
         if (pw != pw2)
         {
             _pwRecheckText.text = "비밀번호가 일치하지 않습니다.";
+            AuthNotice_UI.Instance.gameObject.SetActive(true);
             AuthNotice_UI.Instance.ShowNotice(NoticeCode.CreateAccountFail);
             return;
         }
@@ -155,6 +157,7 @@ public class CreateAccount_UI : MonoBehaviour
         var ok = await Authenticate.DoCreateAccountAsync(_client, id, pw);
 
         // UI 업데이트
+        AuthNotice_UI.Instance.gameObject.SetActive(true);
         AuthNotice_UI.Instance.ShowNotice(ok ? NoticeCode.CreateAccountSucess : NoticeCode.CreateAccountFail);
 
         _createAccountBtn.interactable = true;
@@ -165,6 +168,7 @@ public class CreateAccount_UI : MonoBehaviour
         // ex_2 >> 바로 닫기
 
         // 일단 바로 닫고 다시 로그인 패널 띄우는 걸로 구현함.
+        AuthNotice_UI.Instance.gameObject.SetActive(true);
         AuthNotice_UI.Instance.ShowNotice(NoticeCode.CheckExitCreateAccountPanel);
     }
     private bool IsValidEmail(string s)

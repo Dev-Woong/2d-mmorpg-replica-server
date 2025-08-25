@@ -29,7 +29,6 @@ public class AuthNotice_UI : MonoBehaviour
     [SerializeField] private GameObject _createAccountPanel;
     [SerializeField] private GameObject _authorizePanel;
     [SerializeField] private NoticeCode _noticeCode;
-    private Coroutine _coNoticeActiveTrue;
     private WaitForSeconds _interval = new WaitForSeconds(1f);
     public TMP_Text ChangeNoticeCode(NoticeCode notiCode)
     {
@@ -131,12 +130,6 @@ public class AuthNotice_UI : MonoBehaviour
             this.gameObject.SetActive(false);
         }
     }
-    IEnumerator PanelSetActiveTrue(NoticeCode code)
-    {
-        yield return _interval;
-        this.gameObject.SetActive(true);
-        ChangeNoticeCode(code);
-    }
     private void ShowCloseButton()
     {
         _closePanelBtn.enabled = true;
@@ -144,7 +137,7 @@ public class AuthNotice_UI : MonoBehaviour
     }
     public void ShowNotice(NoticeCode code)
     {
-        _coNoticeActiveTrue = StartCoroutine(PanelSetActiveTrue(code));
+        ChangeNoticeCode(code);
     }
     private void OnClickClose()
     {
