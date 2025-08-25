@@ -19,33 +19,20 @@ public class SimpleCall : MonoBehaviour
         Instance = this;
     }
     public string jwt = "";
-    
-    private async void Start()
+
+    public async Task<bool> CallGrpc(Auth.AuthClient client, string id, string password )
     {
-        await CallGrpc();
-    }
-
-    private async Task CallGrpc()
-    {
-        // gRPC 채널 생성
-        using var handler = new YetAnotherHttpHandler() { Http2Only = true }; // Unity에서 HttpClient 호환을 위해 필요
-        using var channel = GrpcChannel.ForAddress("http://127.0.0.1:8080", new GrpcChannelOptions
-        {
-            HttpHandler = handler,
-            DisposeHttpClient = true
-        });
-
-        var client = new Auth.AuthClient(channel);
-
         try
         {
-            var reply = await client.LoginAsync(new LoginRequest() { Email = "123@123.com", Password = "1234"});
+            var reply = await client.LoginAsync(new LoginRequest() { Email = id, Password = password});
             Debug.Log("gRPC 응답: " + reply.Success + "\ngRPC Detail" + reply.Detail + "\nJwt" + reply.Jwt);
             jwt = reply.Jwt;
+            return reply.Success;
         }
         catch (System.Exception ex)
         {
-            Debug.LogError("gRPC 오류: " + ex.Message); 
+            Debug.LogError("gRPC 오류: " + ex.Message);
+            return false;
         }
     }
 }

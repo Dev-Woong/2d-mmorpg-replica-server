@@ -14,7 +14,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Windows;
-public static class Authenticate
+public static class Authenticate 
 {
     public static async Task<bool> DoCreateAccountAsync(Auth.AuthClient client, string id, string password)
     {
@@ -57,6 +57,25 @@ public static class Authenticate
         {
             Debug.LogError($"[중복확인 예외] {ex.Message}");
             return (false, "예외 발생");
+        }
+    }
+    public static async Task<(bool success, string detail, string jwt)> LoginAsync(Auth.AuthClient client, string id, string password)
+    {
+        try
+        {
+            var reply = await client.LoginAsync(new LoginRequest() 
+            { 
+                Email = id, 
+                Password = password
+            });
+            Debug.Log("gRPC 응답: " + reply.Success + "\ngRPC Detail" + reply.Detail + "\nJwt" + reply.Jwt);
+              
+            return (reply.Success,reply.Detail,reply.Jwt);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("gRPC 오류: " + ex.Message);
+            return (false,ex.Message,"");
         }
     }
 }

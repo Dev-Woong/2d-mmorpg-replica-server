@@ -8,6 +8,7 @@ public enum NoticeCode
 {
     LoginFailNullID = 0,
     LoginFailNullPW,
+    DoLogin,
     LoginFailNullAccount,
     LoginSuccess,
     CheckExitCreateAccountPanel,
@@ -37,12 +38,16 @@ public class Notice_UI : MonoBehaviour
                 _noticeText.text = "비밀번호를 입력해주세요";
                 break;
 
+            case NoticeCode.DoLogin:
+                _noticeText.text = "로그인을 진행중입니다. 잠시만 기다려주세요.";
+                break;
+
             case NoticeCode.LoginFailNullAccount:
                 _noticeText.text = "로그인에 실패했습니다\n존재하지 않는 계정이거나 로그인 정보를 다시 입력해주세요.";
                 break;
 
             case NoticeCode.LoginSuccess:
-                _noticeText.text = "로그인을 진행중입니다. 잠시만 기다려주세요.";
+                _noticeText.text = "로그인에 성공하셨습니다! 캐릭터 정보를 불러오고 있습니다.";
                 break;
 
             case NoticeCode.CheckExitCreateAccountPanel:
