@@ -16,6 +16,7 @@ using UnityEngine.UI;
 using UnityEngine.Windows;
 public static class Authenticate 
 {
+    public static string Jwt = "";
     public static async Task<bool> DoCreateAccountAsync(Auth.AuthClient client, string id, string password)
     {
         try
@@ -98,7 +99,6 @@ public class CreateAccount_UI : MonoBehaviour
     #endregion
     #region Panels
     [SerializeField] private GameObject _authorizePanel;
-    [SerializeField] private GameObject _noticePanel; 
     #endregion
     #region TMP_Texts
     [SerializeField] private TMP_Text _idUseableText;
@@ -134,13 +134,13 @@ public class CreateAccount_UI : MonoBehaviour
         // 입력 검증
         if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(pw) || string.IsNullOrEmpty(pw2))
         {
-            ShowNotice(NoticeCode.CreateAccountFail);
+            AuthNotice_UI.Instance.ShowNotice(NoticeCode.CreateAccountFail);
             return;
         }
         if (pw != pw2)
         {
             _pwRecheckText.text = "비밀번호가 일치하지 않습니다.";
-            ShowNotice(NoticeCode.CreateAccountFail);
+            AuthNotice_UI.Instance.ShowNotice(NoticeCode.CreateAccountFail);
             return;
         }
         if (_checkID == false)
@@ -155,14 +155,9 @@ public class CreateAccount_UI : MonoBehaviour
         var ok = await Authenticate.DoCreateAccountAsync(_client, id, pw);
 
         // UI 업데이트
-        ShowNotice(ok ? NoticeCode.CreateAccountSucess : NoticeCode.CreateAccountFail);
+        AuthNotice_UI.Instance.ShowNotice(ok ? NoticeCode.CreateAccountSucess : NoticeCode.CreateAccountFail);
 
         _createAccountBtn.interactable = true;
-    }
-    private void ShowNotice(NoticeCode code)
-    {
-        _noticePanel.SetActive(true);
-        _noticePanel.GetComponent<Notice_UI>()?.ChangeNoticeCode(code);
     }
     void OnClickExitCreateAccount() // 회원가입 패널 나가기
     {
@@ -170,7 +165,7 @@ public class CreateAccount_UI : MonoBehaviour
         // ex_2 >> 바로 닫기
 
         // 일단 바로 닫고 다시 로그인 패널 띄우는 걸로 구현함.
-        ShowNotice(NoticeCode.CheckExitCreateAccountPanel);
+        AuthNotice_UI.Instance.ShowNotice(NoticeCode.CheckExitCreateAccountPanel);
     }
     private bool IsValidEmail(string s)
     {

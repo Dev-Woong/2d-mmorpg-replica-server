@@ -84,12 +84,12 @@
     <Compile Include="Assets\@Scripts\Packet\ServerPacketManager.cs" />
     <Compile Include="Assets\@Scripts\Packet\ServerPacketHandler.cs" />
     <Compile Include="Assets\@Scripts\Network\Connector.cs" />
-    <Compile Include="Assets\@Scripts\UI\Notice_UI.cs" />
     <Compile Include="Assets\@Scripts\PacketQueue.cs" />
     <Compile Include="Assets\@Scripts\NetworkManager.cs" />
     <Compile Include="Assets\@Scripts\SimpleNetworkUI.cs" />
     <Compile Include="Assets\@Scripts\Protocol\Protocol.cs" />
     <Compile Include="Assets\@Scripts\Network\SendBuffer.cs" />
+    <Compile Include="Assets\@Scripts\UI\AuthNotice_UI.cs" />
     <Compile Include="Assets\@Scripts\SimpleCall.cs" />
     <Compile Include="Assets\@Scripts\Network\ServerSession.cs" />
   </ItemGroup>

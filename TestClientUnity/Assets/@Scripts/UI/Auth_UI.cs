@@ -1,17 +1,22 @@
 using Cysharp.Net.Http;
+using Google.Protobuf.Protocol;
+using Grpc.Core;
 using Grpc.Net.Client;
 using Mmorpg2d.Auth;
+using Packet;
+using System;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Apple.ReplayKit;
+using UnityEngine.Networking.PlayerConnection;
 using UnityEngine.UI;
 public class Auth_UI : MonoBehaviour
 {
     private YetAnotherHttpHandler _handler;
     private GrpcChannel _channel;
     private Auth.AuthClient _client;
-    public static string Jwt = "";
+    
     #region InputFields
     [SerializeField] private TMP_InputField _idField;
     [SerializeField] private TMP_InputField _pwField;
@@ -24,7 +29,6 @@ public class Auth_UI : MonoBehaviour
 
     #region Panels 
     [SerializeField] private GameObject _createAccountPanel;
-    [SerializeField] private GameObject _noticePanel;
     #endregion
     private void Awake()
     {
@@ -53,36 +57,57 @@ public class Auth_UI : MonoBehaviour
         _createAccountPanel.SetActive(true);
         this.gameObject.SetActive(false);
     }
-    private void ShowNotice(NoticeCode code)
-    {
-        _noticePanel.SetActive(true);
-        _noticePanel.GetComponent<Notice_UI>()?.ChangeNoticeCode(code);
-    }
     private async void OnClickLogin()
     {
         var id = _idField.text?.Trim();
         var password = _pwField.text ?? "";
         if (string.IsNullOrEmpty(id)) // 아이디 입력필드가 비워져있을때
         {
-            ShowNotice(NoticeCode.LoginFailNullID);
+            AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullID);
             return;
         }
         if (string.IsNullOrEmpty(password)) // 패스워드 입력필드가 비워져있을때
         {
-            ShowNotice(NoticeCode.LoginFailNullPW);
+            AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullPW);
             return;
         }
-        ShowNotice(NoticeCode.DoLogin);
-        var loginReply = await Authenticate.LoginAsync(_client, id, password);
-        if (loginReply.success)
+        AuthNotice_UI.Instance.ShowNotice(NoticeCode.DoLogin);
+        try
         {
-            Jwt = loginReply.jwt;
-            ShowNotice(NoticeCode.LoginSuccess);
+            var loginReply = await Authenticate.LoginAsync(_client, id, password);
+            if (loginReply.success)
+            {
+                Authenticate.Jwt = loginReply.jwt;
+                ConnectJwtLogin(Authenticate.Jwt);
+            }
+            else
+            {
+                AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullAccount);
+            }
         }
-        else
+        catch (RpcException rEX)
         {
-            ShowNotice(NoticeCode.LoginFailNullAccount); 
+            Debug.LogError(rEX.StatusCode);
+            AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullAccount);
         }
-
+        catch (Exception ex)
+        {
+            Debug.LogError(ex.Message);
+            AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginFailNullAccount);
+        }
+    }
+    void ConnectJwtLogin(string jwtToken)
+    {
+        var token = jwtToken;
+        if (string.IsNullOrEmpty(token))
+        {
+            Debug.LogWarning("[UI] accessToken이 비어있습니다.");
+            return;
+        }
+        
+        var req = new C_JwtLoginRequest { AccessToken = token };
+        var sendBuffer = ServerPacketManager.MakeSendBuffer(req); // PKT_C_JwtLoginRequest로 매핑됨
+        NetworkManager.Instance.Send(sendBuffer);
+        Debug.Log($"[UI] JWT 로그인 요청 전송: len={sendBuffer.Count}");
     }
 }
