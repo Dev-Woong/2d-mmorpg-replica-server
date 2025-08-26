@@ -42,10 +42,7 @@ namespace Packet
                     UnityEngine.Debug.Log($"[LOGIN OK] accountId={reply.Result}");
                     AuthNotice_UI.Instance.gameObject.SetActive(true);
                     AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginSuccess);
-                    var req = new C_CharacterListRequest { };
-                    var sendBuffer = ServerPacketManager.MakeSendBuffer(req); // Jwt 토큰 검증 완료후 캐릭터 리스트 불러오는 버퍼 발송
-                    NetworkManager.Instance.Send(sendBuffer);
-                    UnityEngine.Debug.Log($"[UI] 캐릭터 리스트 전송 요청: playerIndex={0}, len={sendBuffer.Count}");
+                    CharacterList_UI.Instance.gameObject.SetActive(true);
                     break;
 
                 case ELoginResult.InvalidToken: // InvalidToken
@@ -86,19 +83,9 @@ namespace Packet
             AuthNotice_UI.Instance.ShowNotice(NoticeCode.RecvCharacterListSuccess);
             if (reply.Characters == null)
             {
-                
                 UnityEngine.Debug.Log("계정 내 생성된 캐릭터가 없습니다.");
             }
-            foreach (var character in reply.Characters)
-            {
-                AuthNotice_UI.Instance.gameObject.SetActive(true);
-                AuthNotice_UI.Instance.ShowNotice(NoticeCode.LoginSuccess);
-                //Console.WriteLine(character);
-                UnityEngine.Debug.Log(character.Username);
-                UnityEngine.Debug.Log(character.Gender);
-                UnityEngine.Debug.Log(character.Level);
-                UnityEngine.Debug.Log(character.Region);
-            }
+            CharacterList_UI.Instance.SetCharacterList(reply.Characters);
         }
 
         internal static void HANDLE_S_EnterGame(PacketSession session, S_EnterGame game)
